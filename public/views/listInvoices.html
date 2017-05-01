@@ -1,0 +1,72 @@
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      {{headingTitle}}
+      <div class="pull-right">
+        <input class="search" type="text" ng-model="query.refNo" placeholder="Search...">
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="row show-list">
+
+
+        <div class="col-xs-4 col-md-3" ng-repeat="invoice in invoices | filter:query|orderBy:'refNo'">
+          
+        <div class="text-left" style="margin-top:10px">
+          <a href="/invoice/{{invoice._id}}">
+            {{invoice.refNo}} - 
+          </a>
+            {{invoice.buyerName}}
+          </div>
+         <div class="text-center">
+           <a href="/invoice/{{invoice._id}}">
+            <qrcode data="{{invoice.refNo}}"></qrcode>
+           </a>
+         </div>
+         
+         <div class="text-center">
+           <a href="/invoice/{{invoice._id}}">
+          <img class="img-rounded" ng-src="{{invoice.imagePath}}" style="width:200px;height:200px;border:1px solid grey;"/>
+           </a>
+         </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="panel panel-default">
+<table st-table="data" st-safe-src="invoices" class="table table-striped">
+		<thead>
+		<tr>
+			<th st-sort="refNo">Invoice Ref No</th>
+			<th st-sort="buyerName">Buyer Name</th>
+			<th st-sort="fileName">Image File Name</th>
+			<th st-sort="imagePath">balance</th>
+		</tr>
+		<tr>
+			<th>
+				<input st-search="refNo" placeholder="Reference number search..." class="input-sm form-control" type="text"/>
+			</th>
+			<th colspan="4">
+				<input st-search="" placeholder="Search..." class="input-sm form-control" type="text"/>
+			</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr ng-repeat="row in data">
+			<td>{{row.refNo | uppercase}}</td>
+			<td>{{row.buyerName}}</td>
+			<td>{{row.fileName}}</td>
+			<td>{{row.imagePath}}</td>
+		</tr>
+		</tbody>
+		<tfoot>
+			<tr>
+				<td colspan="5" class="text-center">
+					<div st-pagination="" st-items-by-page="itemsByPage" st-displayed-pages="7"></div>
+				</td>
+			</tr>
+		</tfoot>
+	</table>
+</div>

@@ -1,0 +1,13 @@
+{
+	"url":"api",
+	"auth":{
+		"login":"/api/login",
+		"signup":"/api/signup",
+		"logout":"/api/logout"
+	},	
+	"invoice":{
+		"create":"/api/invoice",
+		"list":"/api/invoices",
+		"get":"/api/invoices"
+	}
+}

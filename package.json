@@ -1,0 +1,43 @@
+{
+  "name": "invoicechain",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "dependencies": {
+    "agenda": "^0.9.1",
+    "angular-qr": "^0.2.3",
+    "angular-qrcode": "^7.2.0",
+    "angular-smart-table": "^2.1.8",
+    "async": "^2.3.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "~1.17.1",
+    "connect-busboy": "0.0.2",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.3",
+    "express": "~4.15.2",
+    "express-session": "^1.15.2",
+    "fs": "0.0.1-security",
+    "jade": "~1.11.0",
+    "lodash": "^4.17.4",
+    "mkdirp": "^0.5.1",
+    "mongoose": "^4.9.6",
+    "morgan": "~1.8.1",
+    "multer": "^1.3.0",
+    "ngprogress": "^1.1.1",
+    "nodemailer": "^4.0.1",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "qrcode": "^0.8.1",
+    "request": "^2.81.0",
+    "serve-favicon": "~2.4.2",
+    "sugar": "^2.0.4",
+    "xml2js": "^0.4.17"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-plumber": "^1.1.0",
+    "gulp-sass": "^3.1.0"
+  }
+}
