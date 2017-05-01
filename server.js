@@ -1,3 +1,5 @@
+
+var Web3 = require('web3');
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
@@ -5,7 +7,6 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var bcrypt = require('bcryptjs');
-var busboy = require('connect-busboy');
 var fs = require('fs');
 var multer  = require('multer')
 var mkdirp = require('mkdirp');
@@ -25,7 +26,21 @@ var storage = multer.diskStorage({
 
 var upload = multer({ storage: storage });
 
-//var upload = multer({ dest: 'public/uploadedFiles/' })
+var ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+function checkEthereumConnection(){
+  try{
+  var accountCount = ethWeb3.eth.accounts.length;
+  console.log("Ethereum connection successful. \n Total Ethereum Account Count: "+ accountCount);
+  return true;
+  }catch(e){
+    console.log("Error in Ethereum node connection");
+  }
+
+  return false;
+}
+
+checkEthereumConnection();
 
 var async = require('async');
 var request = require('request');
@@ -200,22 +215,25 @@ app.get('/api/invoices/:id', function(req, res, next) {
 
 });
 
+// Service to get the ethereum account balance
+app.get('/api/account/balance/:actAddress', function(req, res, next) {
+  console.log("Fetching Ethereum account balance by id");
+
+  if(checkEthereumConnection()==true){
+    ethWeb3.eth.getBalance(req.params.actAddress, function(error, result) {
+      res.send({balance:ethWeb3.fromWei(result.toString())});
+    });
+
+  }
+});
+
 app.post('/api/invoice', upload.single('invoiceImage'), function(req, res, next) {
   console.log("Create Invoice invoked");
-  
-  console.log("****************** Data Request : "  + req);
-  //console.log("****************** Data Request Body: "  + req.body);
-  console.log("****************** Data Request refNo: "  + req.refNo);
-  console.log("****************** Data Request formData: "  + req.formData);
-  console.log("****************** Data Request files: "  + req.files);
-  console.log("****************** Data Request files: "  + req.data);
-  
   console.log("****************** Data Request body string: "  + JSON.stringify(req.body));
-  console.log("****************** Data Request body string: "  + req.body.refNo);
+  
 
   if (req.file) {
     console.log("****************** Data File found" );
-
     console.log("****************** Data File fieldname: "+req.file.fieldname);
     console.log("****************** Data File fieldname: originalname: "+req.file.originalname);
     console.log("****************** Data File fieldname: encoding: "+req.file.encoding);
@@ -226,21 +244,6 @@ app.post('/api/invoice', upload.single('invoiceImage'), function(req, res, next)
     console.log("****************** Data File fieldname: size: "+req.file.size);
 
   }
-
-  
-
-/*req.pipe(req.busboy);
-
-  req.busboy.on('invoiceImage', function (fieldname, file, filename) {
-        console.log("Uploading: " + filename); 
-        fstream = fs.createWriteStream(__dirname + '/files/' + filename);
-        file.pipe(fstream);
-        fstream.on('close', function () {
-            res.redirect('back');
-        });
-    });
-  */
-
 
 
   console.log("****************** Data Reference No : "  + req.body.refNo);
@@ -355,6 +358,7 @@ agenda.on('start', function(job) {
 agenda.on('complete', function(job) {
   console.log("Job %s finished", job.attrs.name);
 });*/
+
 
 
 app.listen(app.get('port'), function() {
