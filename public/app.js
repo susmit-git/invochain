@@ -116,14 +116,13 @@ app.config(['$locationProvider', '$routeProvider','$httpProvider', function($loc
 	$rootScope.numberOfCharInName = 20
 	// other vars 
 	$rootScope.textAreaReg = /^([a-z0-9A-ZàâäôéèëêïîçùûüÿæœÀÂÄÔÉÈËÊÏÎŸÇÙÛÜÆŒ\-\\.\\_\\"\\'\\(\\)\\*\\+\\@\\$\\!\\&\\#\\//\\:\\/\\?\\²\\{\\=\\<\\>\\%\\µ\\£\\€\\,\\;\\§\\\n\\ ]*)$/;
-	$rootScope.password=/^([a-zA-Z0-9àâäôéèëêïîçùûüÿæœÀÂÄÔÉÈËÊÏÎŸÇÙÛÜÆŒ@#$%&]){4,12}$/;
-	$rootScope.login_password=/^([a-zA-Z0-9àâäôéèëêïîçùûüÿæœÀÂÄÔÉÈËÊÏÎŸÇÙÛÜÆŒ@#$%&]){0,8}$/;
+	$rootScope.passwordReg=/^([a-zA-Z0-9àâäôéèëêïîçùûüÿæœÀÂÄÔÉÈËÊÏÎŸÇÙÛÜÆŒ@#$%&]){4,12}$/;
+	$rootScope.login_passwordReg=/^([a-zA-Z0-9àâäôéèëêïîçùûüÿæœÀÂÄÔÉÈËÊÏÎŸÇÙÛÜÆŒ@#$%&]){0,8}$/;
 	$rootScope.textReg = /^([a-z0-9A-ZàâäôéèëêïîçùûüÿæœÀÂÄÔÉÈËÊÏÎŸÇÙÛÜÆŒ\-\\.\\_\\"\\'\\(\\)\\*\\+\\@\\$\\!\\&\\#\\ ]*)$/;
-	$rootScope.email="/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/";
-	$rootScope.frenchCurrency = /^\s*-?\d{1,2}(\,\d{1,2})?\s*$/;
-	$rootScope.durationHoursReg = "/^([0-9])([0-9])?([0-9])?$/";
+	$rootScope.emailReg="/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/";
+	$rootScope.durationHoursRegReg = "/^([0-9])([0-9])?([0-9])?$/";
 	$rootScope.durationMinutesReg="/^[0-5]?[0-9]$/";
-	$rootScope.phoneReg =/^(\d)+$/;
+	$rootScope.phoneReg =/^(\d)+$/; 
    
  }); 
 
