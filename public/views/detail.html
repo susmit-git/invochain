@@ -4,7 +4,9 @@
       <div class="media">
         <div class="pull-left">
           <!--<img class="media-object img-rounded" ng-src="{{invoice.imagePath}}">-->
-          <qrcode data="{{invoice.refNo}}"></qrcode>
+          <!--<qrcode data="{{invoice.refNo}}"></qrcode>-->
+          
+          <qrcode data="{{invoice.refNo}}" version="2" error-correction-level="Q" size="200" color="#fff" background="#000" download></qrcode>
         </div>
         <div class="media-body">
           <h2 class="media-heading">

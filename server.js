@@ -51,31 +51,6 @@ var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 
-var showSchema = new mongoose.Schema({
-  _id: Number,
-  name: String,
-  airsDayOfWeek: String,
-  airsTime: String,
-  firstAired: Date,
-  genre: [String],
-  network: String,
-  overview: String,
-  rating: Number,
-  ratingCount: Number,
-  status: String,
-  poster: String,
-  subscribers: [{
-    type: mongoose.Schema.Types.ObjectId, ref: 'User'
-  }],
-  episodes: [{
-      season: Number,
-      episodeNumber: Number,
-      episodeName: String,
-      firstAired: Date,
-      overview: String
-  }]
-});
-
 var userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: String
@@ -110,7 +85,6 @@ userSchema.methods.comparePassword = function(candidatePassword, cb) {
 };
 
 var User = mongoose.model('User', userSchema);
-var Show = mongoose.model('Show', showSchema);
 var Invoice = mongoose.model('Invoice', invoiceSchema);
 //mongoose.connect('localhost');
 mongoose.connect('mongodb://localhost:27017/invoicechaindb');
@@ -218,6 +192,11 @@ app.get('/api/invoices/:id', function(req, res, next) {
 // Service to get the ethereum account balance
 app.get('/api/account/balance/:actAddress', function(req, res, next) {
   console.log("Fetching Ethereum account balance by id");
+  // var abiDef = "[ { \"constant\": false, \"inputs\": [ { \"name\": \"candidate\", \"type\": \"bytes32\" } ], \"name\": \"registerCandidate\", \"outputs\": [], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"user\", \"type\": \"address\" } ], \"name\": \"getRemainingTokensByVoter\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"isCommenced\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"getAllCandidates\", \"outputs\": [ { \"name\": \"\", \"type\": \"bytes32[]\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"name\": \"candidates\", \"outputs\": [ { \"name\": \"\", \"type\": \"bytes32\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"\", \"type\": \"address\" } ], \"name\": \"voterDetails\", \"outputs\": [ { \"name\": \"voterCode\", \"type\": \"address\" }, { \"name\": \"tokensOwned\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": false, \"inputs\": [], \"name\": \"purchase\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": true, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"isRegistrationClosed\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"\", \"type\": \"bytes32\" } ], \"name\": \"votesReceived\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"totalTokens\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"tokenPrice\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"candidate\", \"type\": \"bytes32\" } ], \"name\": \"getCandidateIndex\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": false, \"inputs\": [ { \"name\": \"_title\", \"type\": \"bytes32\" } ], \"name\": \"changeElectionTitle\", \"outputs\": [], \"payable\": false, \"type\": \"function\" }, { \"constant\": false, \"inputs\": [ { \"name\": \"candidate\", \"type\": \"bytes32\" }, { \"name\": \"totalTokens\", \"type\": \"uint256\" } ], \"name\": \"vote\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": false, \"inputs\": [ { \"name\": \"account\", \"type\": \"address\" } ], \"name\": \"transferTo\", \"outputs\": [], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"candidate\", \"type\": \"bytes32\" } ], \"name\": \"getVoteCount\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": false, \"inputs\": [ { \"name\": \"_newOwner\", \"type\": \"address\" } ], \"name\": \"changeOwner\", \"outputs\": [], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"user\", \"type\": \"address\" } ], \"name\": \"getVoterDetails\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" }, { \"name\": \"\", \"type\": \"uint256[]\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"electionTitle\", \"outputs\": [ { \"name\": \"\", \"type\": \"bytes32\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"balanceTokens\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"getTokensSold\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"inputs\": [ { \"name\": \"_candidateNames\", \"type\": \"bytes32[]\" }, { \"name\": \"_title\", \"type\": \"bytes32\" }, { \"name\": \"_tokens\", \"type\": \"uint256\" }, { \"name\": \"_pricePerToken\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"constructor\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_owner\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_electionTitle\", \"type\": \"bytes32\" }, { \"indexed\": false, \"name\": \"_totalTokens\", \"type\": \"uint256\" } ], \"name\": \"GeneralElectionOwnerAssigned\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_voter\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_purchasedTokens\", \"type\": \"uint256\" } ], \"name\": \"ElectionTokenPurchased\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_voter\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_voteTokens\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_candidate\", \"type\": \"bytes32\" } ], \"name\": \"ElectionVoteCasted\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_from\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_contractAccount\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_to\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_value\", \"type\": \"uint256\" } ], \"name\": \"ElectionAmountTransferred\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_from\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_prevTitle\", \"type\": \"bytes32\" }, { \"indexed\": false, \"name\": \"_newTitle\", \"type\": \"bytes32\" } ], \"name\": \"ElectionTitleChanged\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_from\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_candidateName\", \"type\": \"bytes32\" } ], \"name\": \"ElectionRegisterCandidate\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_data\", \"type\": \"bytes32\" }, { \"indexed\": false, \"name\": \"value\", \"type\": \"uint256\" } ], \"name\": \"ElectionDebuggingLog\", \"type\": \"event\" } ]";
+  // var gc=objWeb3.eth.contract(JSON.parse(abiDef)).at("0xc53b26e14d2678040f89ffee9bacdb5f1e7199a2");
+  //  var callData=gc.getTokensSold.call();
+  //  console.log(callData);
+  //  console.log(callData.c[0]);
 
   if(checkEthereumConnection()==true){
     ethWeb3.eth.getBalance(req.params.actAddress, function(error, result) {
@@ -315,51 +294,6 @@ app.use(function(err, req, res, next) {
   console.error(err.stack);
   res.send(500, { message: err.message });
 });
-
-
-/*
-agenda.define('send email alert', function(job, done) {
-  Show.findOne({ name: job.attrs.data }).populate('subscribers').exec(function(err, show) {
-    var emails = show.subscribers.map(function(user) {
-      return user.email;
-    });
-
-    var upcomingEpisode = show.episodes.filter(function(episode) {
-      return new Date(episode.firstAired) > new Date();
-    })[0];
-
-    var smtpTransport = nodemailer.createTransport('SMTP', {
-      service: 'SendGrid',
-      auth: { user: 'hslogin', pass: 'hspassword00' }
-    });
-
-    var mailOptions = {
-      from: 'Fred Foo ✔ <foo@blurdybloop.com>',
-      to: emails.join(','),
-      subject: show.name + ' is starting soon!',
-      text: show.name + ' starts in less than 2 hours on ' + show.network + '.\n\n' +
-        'Episode ' + upcomingEpisode.episodeNumber + ' Overview\n\n' + upcomingEpisode.overview
-    };
-
-    smtpTransport.sendMail(mailOptions, function(error, response) {
-      console.log('Message sent: ' + response.message);
-      smtpTransport.close();
-      done();
-    });
-  });
-});
-
-agenda.start();
-
-agenda.on('start', function(job) {
-  console.log("Job %s starting", job.attrs.name);
-});
-
-agenda.on('complete', function(job) {
-  console.log("Job %s finished", job.attrs.name);
-});*/
-
-
 
 app.listen(app.get('port'), function() {
   console.log('Express server listening on port ' + app.get('port'));

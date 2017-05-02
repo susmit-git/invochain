@@ -1,0 +1,1 @@
+mongod --config "E:\Program Files (x86)\MongoDB\Server\3.4\mongod.cfg"
