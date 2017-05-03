@@ -1,5 +1,4 @@
-
-  <div class="panel panel-default">
+<div class="panel panel-default">
     <div class="panel-heading">
       {{headingTitle}}
       <div class="pull-right">
@@ -55,7 +54,9 @@
 		</thead>
 		<tbody>
 		<tr ng-repeat="row in data">
-			<td>{{row.refNo | uppercase}}</td>
+			<td><a href="/invoice/{{row._id}}">
+            {{row.refNo | uppercase}} 
+          </a></td>
 			<td>{{row.buyerName}}</td>
 			<td>{{row.fileName}}</td>
 			<td>{{row.imagePath}}</td>

@@ -1,38 +1,10 @@
-<!--<div class="jumbotron">
-  <div class="container">
-    <ul class="alphabet">
-      <li ng-repeat="char in alphabet">
-        <span ng-click="filterByAlphabet(char)">{{char}}</span>
-      </li>
-    </ul>
-    <ul class="genres">
-      <li ng-repeat="genre in genres">
-        <span ng-click="filterByGenre(genre)">{{genre}}</span>
-      </li>
-    </ul>
-  </div>
-</div>-->
-<div class="container" ng-include="'/views/listInvoices.html'">
-<!--
-<div class="container">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      {{headingTitle}}
-      <div class="pull-right">
-        <input class="search" type="text" ng-model="query.refNo" placeholder="Search...">
-      </div>
-    </div>
-    <div class="panel-body">
-      <div class="row show-list">
-        <div class="col-xs-4 col-md-3" ng-repeat="invoice in invoices | filter:query|orderBy:'refNo'">
-          <a href="/invoice/{{invoice._id}}">
-            {{invoice.refNo}}
-          </a>
-          <div class="text-left">
-            Buyer Name: {{invoice.buyerName}}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>-->
+<div class="container" >
+	<div class="panel panel-default" ng-show="!isUserLoggedIn">
+		<div class="panel-heading"style="text-align:center;margin:200px">
+		  <h4>Welcome to InvoChain!!!</h4>
+		</div>
+	</div>
 </div>
+
+
+<div class="container" ng-include="'/views/listInvoices.html'"  ng-show="isUserLoggedIn" />

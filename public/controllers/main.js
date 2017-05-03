@@ -1,22 +1,11 @@
 
 angular.module('MyApp')
-  .controller('MainCtrl', ['$scope', 'SearchInvoiceFactory', function($scope, SearchInvoiceFactory) {
-
-   
+  .controller('MainCtrl', ['$scope', 'SearchInvoiceFactory','$sessionStorage','$rootScope', function($scope, SearchInvoiceFactory,$sessionStorage,$rootScope) {
     $scope.headingTitle = 'Top 12 Invoices';
 
     $scope.invoices = SearchInvoiceFactory.query();
 
-     $scope.data=[];
-    //$scope.invoicesData=SearchInvoiceFactory.query();
-
-    /*
-    
-    $scope.invoices.then(function(data) {
-       console.log(data);
-    });
-
-   */
+    $scope.data=[];
 
     $scope.filterByRefNo = function(refNo) {
       $scope.invoices = SearchInvoiceFactory.query({ refNo: refNo });

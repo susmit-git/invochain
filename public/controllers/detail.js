@@ -3,6 +3,7 @@ angular.module('MyApp')
   .controller('DetailCtrl', ['$scope', '$rootScope', '$sessionStorage','$routeParams','$location', 'InvoiceFactory',
     function($scope, $rootScope, $sessionStorage, $routeParams,$location, InvoiceFactory) {
       $scope.invoice=[];
+	  $scope.isUserLoggedId=true;
 
       $scope.getInvoiceById = function() {
         
@@ -19,6 +20,7 @@ angular.module('MyApp')
         $scope.getInvoiceById();
       }
       else{
+		$scope.isUserLoggedId=false;
         $location.path("/home");
       }
       

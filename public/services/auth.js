@@ -13,9 +13,10 @@ angular.module('MyApp')
           //'/api/login'
           return $http.post($rootScope.config.auth.login, user)
             .success(function(data) {
-              //$rootScope.currentUser = data;
               $sessionStorage.currentUser = data;
               $rootScope.currentUser=$sessionStorage.currentUser;
+			  //$rootScope.$emit('loginEvent', {});
+			  
               $location.path('/');
 
               $alert({
@@ -66,6 +67,7 @@ angular.module('MyApp')
             //$rootScope.currentUser = null;
             $sessionStorage.currentUser = null;
             $rootScope.currentUser=null;
+			//$rootScope.isUserLoggedIn=false;
 
             $cookieStore.remove('user');
             $alert({

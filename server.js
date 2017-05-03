@@ -26,12 +26,16 @@ var storage = multer.diskStorage({
 
 var upload = multer({ storage: storage });
 
-var ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+//var ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+var ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://ethinvlab.southeastasia.cloudapp.azure.com:8545"));
 
 function checkEthereumConnection(){
   try{
   var accountCount = ethWeb3.eth.accounts.length;
   console.log("Ethereum connection successful. \n Total Ethereum Account Count: "+ accountCount);
+
+  console.log("First Ethereum Account: "+ ethWeb3.eth.accounts[0]);
+
   return true;
   }catch(e){
     console.log("Error in Ethereum node connection");
@@ -87,7 +91,8 @@ userSchema.methods.comparePassword = function(candidatePassword, cb) {
 var User = mongoose.model('User', userSchema);
 var Invoice = mongoose.model('Invoice', invoiceSchema);
 //mongoose.connect('localhost');
-mongoose.connect('mongodb://localhost:27017/invoicechaindb');
+//mongoose.connect('mongodb://localhost:27017/invoicechaindb');
+mongoose.connect('mongodb://127.0.0.1:27017/invoicechaindb');
 
 //var agenda = require('agenda')({ db: { address: 'mongodb://localhost:27017/invoicechaindb' } });
 
@@ -190,13 +195,28 @@ app.get('/api/invoices/:id', function(req, res, next) {
 });
 
 // Service to get the ethereum account balance
-app.get('/api/account/balance/:actAddress', function(req, res, next) {
+app.get('/api/bc/status', function(req, res, next) {
+  //0x63019067023feb11683c74b5a9d2d2a3df11f1d1
+  var bcStatus=checkEthereumConnection();
+  if(bcStatus==true){
+    res.send({status:checkEthereumConnection(),total_accounts:ethWeb3.eth.accounts.length,primary_account:ethWeb3.eth.accounts[0]});
+  }
+  else{
+    res.send({status:bcStatus});
+  }
+  
+});
+
+// Service to get the ethereum account balance
+app.get('/api/bc/balance/:actAddress', function(req, res, next) {
   console.log("Fetching Ethereum account balance by id");
   // var abiDef = "[ { \"constant\": false, \"inputs\": [ { \"name\": \"candidate\", \"type\": \"bytes32\" } ], \"name\": \"registerCandidate\", \"outputs\": [], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"user\", \"type\": \"address\" } ], \"name\": \"getRemainingTokensByVoter\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"isCommenced\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"getAllCandidates\", \"outputs\": [ { \"name\": \"\", \"type\": \"bytes32[]\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"name\": \"candidates\", \"outputs\": [ { \"name\": \"\", \"type\": \"bytes32\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"\", \"type\": \"address\" } ], \"name\": \"voterDetails\", \"outputs\": [ { \"name\": \"voterCode\", \"type\": \"address\" }, { \"name\": \"tokensOwned\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": false, \"inputs\": [], \"name\": \"purchase\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": true, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"isRegistrationClosed\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"\", \"type\": \"bytes32\" } ], \"name\": \"votesReceived\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"totalTokens\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"tokenPrice\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"candidate\", \"type\": \"bytes32\" } ], \"name\": \"getCandidateIndex\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": false, \"inputs\": [ { \"name\": \"_title\", \"type\": \"bytes32\" } ], \"name\": \"changeElectionTitle\", \"outputs\": [], \"payable\": false, \"type\": \"function\" }, { \"constant\": false, \"inputs\": [ { \"name\": \"candidate\", \"type\": \"bytes32\" }, { \"name\": \"totalTokens\", \"type\": \"uint256\" } ], \"name\": \"vote\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": false, \"inputs\": [ { \"name\": \"account\", \"type\": \"address\" } ], \"name\": \"transferTo\", \"outputs\": [], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"candidate\", \"type\": \"bytes32\" } ], \"name\": \"getVoteCount\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": false, \"inputs\": [ { \"name\": \"_newOwner\", \"type\": \"address\" } ], \"name\": \"changeOwner\", \"outputs\": [], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [ { \"name\": \"user\", \"type\": \"address\" } ], \"name\": \"getVoterDetails\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" }, { \"name\": \"\", \"type\": \"uint256[]\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"electionTitle\", \"outputs\": [ { \"name\": \"\", \"type\": \"bytes32\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"balanceTokens\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"constant\": true, \"inputs\": [], \"name\": \"getTokensSold\", \"outputs\": [ { \"name\": \"\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"function\" }, { \"inputs\": [ { \"name\": \"_candidateNames\", \"type\": \"bytes32[]\" }, { \"name\": \"_title\", \"type\": \"bytes32\" }, { \"name\": \"_tokens\", \"type\": \"uint256\" }, { \"name\": \"_pricePerToken\", \"type\": \"uint256\" } ], \"payable\": false, \"type\": \"constructor\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_owner\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_electionTitle\", \"type\": \"bytes32\" }, { \"indexed\": false, \"name\": \"_totalTokens\", \"type\": \"uint256\" } ], \"name\": \"GeneralElectionOwnerAssigned\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_voter\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_purchasedTokens\", \"type\": \"uint256\" } ], \"name\": \"ElectionTokenPurchased\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_voter\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_voteTokens\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_candidate\", \"type\": \"bytes32\" } ], \"name\": \"ElectionVoteCasted\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_from\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_contractAccount\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_to\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_value\", \"type\": \"uint256\" } ], \"name\": \"ElectionAmountTransferred\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_from\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_prevTitle\", \"type\": \"bytes32\" }, { \"indexed\": false, \"name\": \"_newTitle\", \"type\": \"bytes32\" } ], \"name\": \"ElectionTitleChanged\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_from\", \"type\": \"address\" }, { \"indexed\": false, \"name\": \"_candidateName\", \"type\": \"bytes32\" } ], \"name\": \"ElectionRegisterCandidate\", \"type\": \"event\" }, { \"anonymous\": false, \"inputs\": [ { \"indexed\": false, \"name\": \"_eventTimeStamp\", \"type\": \"uint256\" }, { \"indexed\": false, \"name\": \"_data\", \"type\": \"bytes32\" }, { \"indexed\": false, \"name\": \"value\", \"type\": \"uint256\" } ], \"name\": \"ElectionDebuggingLog\", \"type\": \"event\" } ]";
   // var gc=objWeb3.eth.contract(JSON.parse(abiDef)).at("0xc53b26e14d2678040f89ffee9bacdb5f1e7199a2");
   //  var callData=gc.getTokensSold.call();
   //  console.log(callData);
   //  console.log(callData.c[0]);
+
+  //0x63019067023feb11683c74b5a9d2d2a3df11f1d1
 
   if(checkEthereumConnection()==true){
     ethWeb3.eth.getBalance(req.params.actAddress, function(error, result) {
