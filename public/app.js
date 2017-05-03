@@ -73,6 +73,15 @@ app.config(['$locationProvider', '$routeProvider','$httpProvider', function($loc
     $http.get("lang/lang_en.json").success (function(data){
 		$rootScope.lang = data;
     });
+
+    if(window.web3!=undefined){
+        console.log("Ethereum provider found.");
+        $rootScope.ethWeb3 = new Web3(window.web3.currentProvider);
+        var accountCount = $rootScope.ethWeb3.eth.accounts.length;
+        console.log("Ethereum connection successful. \n Total Ethereum Account Count: "+ accountCount);
+
+        console.log("First Ethereum Account: "+ $rootScope.ethWeb3.eth.accounts[0]);
+    }
 	
 	// Load the api mapping and configuration
 	$http.get("config/config.json").success (function(data){

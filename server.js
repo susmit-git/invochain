@@ -27,9 +27,26 @@ var storage = multer.diskStorage({
 var upload = multer({ storage: storage });
 
 //var ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-var ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://ethinvlab.southeastasia.cloudapp.azure.com:8545"));
+//var ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://ethinvlab.southeastasia.cloudapp.azure.com:8545"));
+var ethWeb3 = null;
 
-function checkEthereumConnection(){
+  function checkEthereumConnection(){
+  //console.log("Global Provided: "+global.web3);
+  
+
+  //if(typeof web3 !== 'undefined'){
+  //if(global.web3){  
+    
+  //console.log("Metamask type of provider selected");
+  //ethWeb3 = new Web3(web3.currentProvider);
+ //   ethWeb3 = new Web3(global.web3.currentProvider);
+  //}
+  //else{
+    //console.log("Regular provider selected");
+    ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://ethinvlab.southeastasia.cloudapp.azure.com:8545"));
+  //}
+
+
   try{
   var accountCount = ethWeb3.eth.accounts.length;
   console.log("Ethereum connection successful. \n Total Ethereum Account Count: "+ accountCount);
