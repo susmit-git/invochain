@@ -1,4 +1,4 @@
-var app = angular.module('MyApp', ['ngCookies', 'ngResource', 'ngStorage', 'ngMessages', 'ngRoute', 'mgcrea.ngStrap','monospaced.qrcode','smart-table','ngProgress'])
+var app = angular.module('MyApp', ['ngCookies', 'ngResource', 'ngStorage', 'ngMessages', 'ngRoute', 'mgcrea.ngStrap','monospaced.qrcode','smart-table','ngProgress','ngAnimate','ngMaterialDatePicker'])
 
 app.config(['$locationProvider', '$routeProvider','$httpProvider', function($locationProvider, $routeProvider, $httpProvider) {
     $locationProvider.html5Mode(true);

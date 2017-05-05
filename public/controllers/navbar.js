@@ -1,12 +1,13 @@
 angular.module('MyApp')
-  .controller('NavbarCtrl', ['$scope', '$rootScope', '$sessionStorage','Auth', 
-  function($scope, $rootScope,$sessionStorage,Auth) {
+  .controller('NavbarCtrl', ['$scope', '$rootScope', '$sessionStorage','Auth', '$location',
+  function($scope, $rootScope,$sessionStorage,Auth,$location) {
     $scope.isSeller=false;
 	$rootScope.isUserLoggedIn=false;
 
     $scope.logout = function() {
       Auth.logout().success(function() {
         $rootScope.$emit('logoutEvent', {});
+        $location.path('/');
       });
     };
 

@@ -40,6 +40,7 @@
 		<tr>
 			<th st-sort="refNo">Invoice Ref No</th>
 			<th st-sort="buyerName">Buyer Name</th>
+			<th st-sort="creationDate">Creation Date/Time</th>
 			<th st-sort="fileName">Image File Name</th>
 			<th st-sort="imagePath">Image File Path</th>
 		</tr>
@@ -58,6 +59,7 @@
             {{row.refNo | uppercase}} 
           </a></td>
 			<td>{{row.buyerName}}</td>
+			<td>{{row.creationDate | date : "dd MMM yyyy HH:mm:ss"}}</td>
 			<td>{{row.fileName}}</td>
 			<td>{{row.imagePath}}</td>
 		</tr>

@@ -17,6 +17,30 @@
             <div ng-message="required">Buyer name is required.</div>
           </div>
         </div>
+        <div class="form-group" ng-class="{ 'has-success' : addForm.creationDate.$valid && addForm.creationDate.$dirty, 
+        'has-error' : addForm.creationDate.$invalid && addForm.creationDate.$dirty }">
+
+            
+            
+          <input mdc-datetime-picker="" date="true" time="true" type="text" id="creationDate" placeholder="Enter date & time" 
+          min-date="date" ng-model="entity.creationDate" class="form-control"  format="DD MMM YYYY hh:mm a" aria-invalid="false" />
+
+          <!--md-input-container class="">
+          </md-input-container-->
+          <!--md-input-has-placeholder flex-gt-md-30 md-input-has-value md-input-focused-->
+          <!--ng-pristine ng-valid ng-isolate-scope md-input ng-touched
+          
+          String type
+          "creationDate" : "Fri May 05 2017 17:26:45 GMT+0530 (India Standard Time)"
+          Date type
+          "creationDate" : ISODate("2017-05-05T12:13:02.000Z")
+          -->
+         
+          <div class="help-block text-danger" ng-if="addForm.creationDate.$dirty" ng-messages="addForm.creationDate.$error">
+            <div ng-message="required">Creation date is required.</div>
+          </div>
+        </div>
+        
         <div class="form-group" ng-class="{ 'has-success' : addForm.invoiceImage.$valid && addForm.invoiceImage.$dirty, 
         'has-error' : addForm.invoiceImage.$invalid && addForm.invoiceImage.$dirty }">
           <input class="form-control" type="file" name="invoiceImage" file-model="entity.invoiceImage" required>

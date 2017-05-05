@@ -7,6 +7,7 @@ angular.module('MyApp')
           var formData = new FormData();
           formData.append('refNo',invoice.refNo);
           formData.append('buyerName',invoice.buyerName);
+          formData.append('creationDate',invoice.creationDate);
           formData.append('invoiceImage', invoice.invoiceImage);
 
           //return $http.post('/api/invoice', {refNo:invoice.refNo,buyerName:invoice.buyerName})
