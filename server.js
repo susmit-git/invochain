@@ -31,21 +31,7 @@ var upload = multer({ storage: storage });
 var ethWeb3 = null;
 
   function checkEthereumConnection(){
-  //console.log("Global Provided: "+global.web3);
-  
-
-  //if(typeof web3 !== 'undefined'){
-  //if(global.web3){  
-    
-  //console.log("Metamask type of provider selected");
-  //ethWeb3 = new Web3(web3.currentProvider);
- //   ethWeb3 = new Web3(global.web3.currentProvider);
-  //}
-  //else{
-    //console.log("Regular provider selected");
-    ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://ethinvlab.southeastasia.cloudapp.azure.com:8545"));
-  //}
-
+  ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://ethinvlab.southeastasia.cloudapp.azure.com:8545"));
 
   try{
   var accountCount = ethWeb3.eth.accounts.length;
@@ -82,7 +68,8 @@ var invoiceSchema = new mongoose.Schema({
   buyerName: String,
   imagePath: String,
   fileName: String,
-  contentType: String
+  contentType: String,
+  creationDate: Date
 });
 
 userSchema.pre('save', function(next) {
@@ -216,7 +203,12 @@ app.get('/api/bc/status', function(req, res, next) {
   //0x63019067023feb11683c74b5a9d2d2a3df11f1d1
   var bcStatus=checkEthereumConnection();
   if(bcStatus==true){
-    res.send({status:checkEthereumConnection(),total_accounts:ethWeb3.eth.accounts.length,primary_account:ethWeb3.eth.accounts[0]});
+
+    var netid=ethWeb3.version.network;
+    var peerCount=ethWeb3.net.peerCount;
+    console.log('This is the network id: '+ netid);
+    res.send({status:checkEthereumConnection(),total_accounts:ethWeb3.eth.accounts.length,primary_account:ethWeb3.eth.accounts[0],network_id:netid,peer_count:peerCount});
+    
   }
   else{
     res.send({status:bcStatus});
@@ -264,11 +256,13 @@ app.post('/api/invoice', upload.single('invoiceImage'), function(req, res, next)
 
   console.log("****************** Data Reference No : "  + req.body.refNo);
   console.log("****************** Data Buyer Name : "  + req.body.buyerName);
-  console.log("****************** Data Buyer Name : "  + req.body.invoiceImage);
+  console.log("****************** Data Creation Date : "  + req.body.creationDate);
+  
 
 
   var strRefNo  =req.body.refNo;
   var strbuyerName  =req.body.buyerName;
+  var strCreationDate  =req.body.creationDate;
   
 
   if(strRefNo==undefined){
@@ -281,7 +275,8 @@ app.post('/api/invoice', upload.single('invoiceImage'), function(req, res, next)
     buyerName: req.body.buyerName,
     imagePath: "uploadedFiles\\"+req.file.filename,
     fileName: req.file.originalname,
-    contentType: req.file.mimetype
+    contentType: req.file.mimetype,
+    creationDate: strCreationDate
   });
   console.log("Save tobe invoked");
   invoice.save(function(err) {
