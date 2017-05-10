@@ -12,11 +12,20 @@ var mkdirp = require('mkdirp');
 var solc = require('solc');
 var router = express.Router();
 var ethWeb3 = null;
-
+var userContractInstance = null;
+var defaultAppAdminAccount=null;
+var defaultPwd="password1234";
+var ethUtils = require('ethereumjs-util'); 
+var hexUtil = require('ethjs-util');
+var keythereum = require("keythereum");
+var datadir = "ethdata";
 
 var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+
+var userContractName=":UserRegistrationService";
+var userContractAddress=     "0x68d19a9cd995e1c4fd3428a9e9b651104c9fd8a2";
 
 //var async = require('async');
 //var request = require('request');
@@ -115,24 +124,127 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, function(email, passw
   });
 }));
 
-function checkEthereumConnection(){
+function initializeEthereumConnection(){
   ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://ethinvlab.southeastasia.cloudapp.azure.com:8545"));
 
+  //var web3IPC = new Web3(new Web3.providers.IpcProvider(gethIPCPath, require('net')));
+
   try{
-  var accountCount = ethWeb3.eth.accounts.length;
-  console.log("Ethereum connection successful. \n Total Ethereum Account Count: "+ accountCount);
+    console.log("Is Ethereum connected: "+ ethWeb3.isConnected());
 
-  console.log("First Ethereum Account: "+ ethWeb3.eth.accounts[0]);
+    var accountCount = ethWeb3.eth.accounts.length;
+    console.log("Total Ethereum Account Count: "+ accountCount);
 
-  return true;
+    console.log("First Ethereum Account: "+ ethWeb3.eth.accounts[0]);
+
   }catch(e){
     console.log("Error in Ethereum node connection");
   }
 
-  return false;
+  defaultAppAdminAccount = ethWeb3.eth.accounts[1];
+  console.log("App Ethereum Account assigned: "+defaultAppAdminAccount);
+
+  return initializeContracts();
 }
 
-checkEthereumConnection();
+function checkEthereumConnection(){
+    if(ethWeb3.isConnected()==true){
+        console.log("Ethereum connection is active.");
+        return true;
+    }
+
+    return false;
+}
+
+function initializeContracts(){
+    if(ethWeb3.isConnected()==false){
+        console.log("No Ethereum Connection");
+        return false;
+    }  
+    console.log("Ethereum Connection Successful");
+    var input = fs.readFileSync('contracts/UserRegistrationService.sol');
+    var output = solc.compile(input.toString(), 1);
+
+    var bytecode = output.contracts[userContractName].bytecode;
+    console.log("Got bytecode");
+    var abi = JSON.parse(output.contracts[userContractName].interface);
+    console.log("Got Abi");   
+    var contract = ethWeb3.eth.contract(abi);
+
+    userContractInstance =  contract.at(userContractAddress)  
+    console.log("Contract instanciated from: "+userContractAddress);   
+
+    return true;
+}
+
+function findPrivateKey(){
+    if(ethWeb3.isConnected()==false){
+        console.log("No Ethereum Connection");
+        return '';
+    }
+
+    console.log("fetcihing the key object");
+
+    // Synchronous
+    var keyObject = keythereum.importFromFile(defaultAppAdminAccount, datadir);
+
+    console.log("key object fetcjed: "+ keyObject);
+    // synchronous
+    //var privateKey = keythereum.recover(defaultPwd, keyObject);
+    var privateKey = keythereum.recover(defaultPwd, keyObject);
+
+    //var str=arrayBufferToString(privateKey);
+    var str=privateKey.toString('hex');
+    console.log("Plain Private Key: "+ privateKey.toString('hex'));
+
+    return str;
+}
+
+function createNewAccount(){
+    var password = defaultPwd;
+    var kdf = "pbkdf2"; // or "scrypt" to use the scrypt kdf
+    var filestore=datadir+"/keystore";
+    
+
+    var params = { keyBytes: 32, ivBytes: 16 };
+    var dk = keythereum.create(params);
+    var strPvtKey=dk.privateKey.toString('hex');
+    console.log("Pvt Key: "+ strPvtKey);
+
+    var options = {kdf: "pbkdf2",  cipher: "aes-128-ctr",  kdfparams: {c: 262144, dklen: 32, prf: "hmac-sha256"}};
+
+    var keyObject = keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, options);
+
+    console.log("Address: "+ keyObject.address);
+    console.log("Id: "+ keyObject.id);
+
+    keythereum.exportToFile(keyObject,filestore);
+
+
+    return {address:keyObject.address,privateKey:strPvtKey};
+}
+
+function exportAccount(){
+    var password = defaultPwd;
+    var kdf = "pbkdf2"; // or "scrypt" to use the scrypt kdf
+
+    // asynchronous
+    //keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, options);
+
+    keythereum.exportToFile(keyObject)
+}
+
+router.get('/api/bc/createaccount', function(req, res, next) {
+    console.log("Creating Account");
+    var accData=createNewAccount();
+    res.send(accData);
+});
+
+router.get('/api/bc/findprivatekey', function(req, res, next) {
+    console.log("finding private key");
+    var pkey=findPrivateKey();
+    res.send({privatekey:pkey});
+});
 
 // Start of Invoice Rest API Service
 router.get('/api/invoices', function(req, res, next) {
@@ -286,6 +398,171 @@ router.post('/api/signup', function(req, res, next) {
   });
 });
 
+function transferAmount(){
+    if(ethWeb3.isConnected()==false){
+        console.log("No Ethereum Connection");
+        return '';
+    }  
+    console.log("Ethereum Connection Successful");
+
+    var tx=ethWeb3.eth.sendTransaction(
+    {
+        from: defaultAppAdminAccount,
+        value:ethWeb3.toWei('2','ether'),
+        to: '0x08ce4bc435b28b1868cf08df5a1bb72ff19a1a66',
+        data: '0x0000000000000000000000000000000000000000'
+    });
+
+    console.log("Data: "+ JSON.stringify(tx));
+
+    return tx;
+}
+
+function viewTransaction(txHash) {
+  if(ethWeb3.isConnected()==false){
+        console.log("No Ethereum Connection");
+        return '';
+  }  
+
+  console.log("Transaction : "+ txHash);
+
+  var tx = ethWeb3.eth.getTransaction(txHash);
+  if (tx != null) {
+    console.log("  tx hash          : " + tx.hash + "\n"
+      + "   nonce           : " + tx.nonce + "\n"
+      + "   blockHash       : " + tx.blockHash + "\n"
+      + "   blockNumber     : " + tx.blockNumber + "\n"
+      + "   transactionIndex: " + tx.transactionIndex + "\n"
+      + "   from            : " + tx.from + "\n" 
+      + "   to              : " + tx.to + "\n"
+      + "   value           : " + tx.value + "\n"
+      + "   gasPrice        : " + tx.gasPrice + "\n"
+      + "   gas             : " + tx.gas + "\n"
+      + "   input           : " + tx.input);
+  }
+
+  return tx;
+}
+
+function viewBlock(blockNo) {
+  if(ethWeb3.isConnected()==false){
+        console.log("No Ethereum Connection");
+        return '';
+  }  
+
+  console.log("Block : "+ blockNo);
+
+  var block=ethWeb3.eth.getBlock(blockNo);
+
+  console.log("Block number     : " + block.number + "\n"
+    + " hash            : " + block.hash + "\n"
+    + " parentHash      : " + block.parentHash + "\n"
+    + " nonce           : " + block.nonce + "\n"
+    + " sha3Uncles      : " + block.sha3Uncles + "\n"
+    + " logsBloom       : " + block.logsBloom + "\n"
+    + " transactionsRoot: " + block.transactionsRoot + "\n"
+    + " stateRoot       : " + block.stateRoot + "\n"
+    + " miner           : " + block.miner + "\n"
+    + " difficulty      : " + block.difficulty + "\n"
+    + " totalDifficulty : " + block.totalDifficulty + "\n"
+    + " extraData       : " + block.extraData + "\n"
+    + " size            : " + block.size + "\n"
+    + " gasLimit        : " + block.gasLimit + "\n"
+    + " gasUsed         : " + block.gasUsed + "\n"
+    + " timestamp       : " + block.timestamp + "\n"
+    + " transactions    : " + block.transactions + "\n"
+    + " uncles          : " + block.uncles);
+    if (block.transactions != null) {
+     // console.log("--- transactions ---");
+     // block.transactions.forEach( function(e) {
+     //   printTransaction(e);
+      //})
+    }
+
+    return block;
+}
+
+router.get('/api/bc/transfer', function(req, res, next) {
+    console.log("Transfer Amount Invoked");
+    var addr=transferAmount();
+    res.send({tx:addr});
+});
+
+router.get('/api/bc/viewTransaction/:txHash', function(req, res, next) {
+    console.log("View Transaction Details");
+    var data=viewTransaction(req.params.txHash);
+    res.send(data);
+});
+
+router.get('/api/bc/viewBlock/:blockNo', function(req, res, next) {
+    console.log("View Block Details");
+    var data=viewBlock(req.params.blockNo);
+    res.send(data);
+});
+
+
+router.get('/api/bc/verifysig', function(req, res, next) {
+    console.log("Verifysig Invoked");
+    var addr=verifySignature();
+    res.send({address:addr});
+});
+
+function verifySignature(){
+    //var sgn='0x2562ea1d0af170b7be821b53b9ea2a69d39681d87adc51093702072ef18b24b9302407ea985a7cc7bec6567ba1d8ba2def3dffb29df22c756edeeb392dee0be31b';
+
+    console.log("Split in progress: "+defaultAppAdminAccount);
+
+    var msgHashHex = ethWeb3.sha3('my test message');
+    
+    console.log("Message hex: "+ msgHashHex);
+
+    var message=new Buffer(hexUtil.stripHexPrefix(msgHashHex), 'hex');
+    var adr="";
+
+    console.log("Message buffer: "+ message.toString('hex'));
+
+    var privkeyBuffer = Buffer.from(message, 'hex');
+
+    var vrs=ethUtils.ecsign(message, privkeyBuffer);
+
+    console.log("Msg Signature: "+ vrs);
+
+    var pubkey = ethUtils.ecrecover(message, vrs.v, vrs.r, vrs.s);
+    console.log("Msg pubkey: "+ pubkey.toString('hex'));
+
+    console.log("Msg Orig pubkey: "+ ethUtils.privateToPublic(privkeyBuffer).toString('hex'));
+
+    return pubkey.toString('hex');
+}
+
+function addUser(email, pwd, userName){
+    if(ethWeb3.isConnected()==false){
+        console.log("No Ethereum Connection");
+        return;
+    }
+    console.log("Ethereum Connection Successful");
+    
+    if(userContractInstance==undefined || userContractInstance==null){
+        console.log("No Contract Instance found");
+        return;
+    }
+
+    console.log("Contract Instance Found");
+
+     userContractInstance.addUser(defaultAppAdminAccount, "b@b.com", "Test User 1", 
+        "changeme", {gas: 240000, from: defaultAppAdminAccount}, (err, res) =>{
+        console.log('tx: ' + res);
+        var curTrans=ethWeb3.eth.getTransaction(res);
+
+        console.log("Transaction no : "+ curTrans);
+        if(curTrans!=undefined){
+            var bcNo=curTrans.blockNumber;
+            console.log("Block no : "+bcNo);
+        }
+
+    });
+}
+
 router.get('/api/logout', function(req, res, next) {
   req.logout();
   res.send(200);
@@ -294,5 +571,7 @@ router.get('/api/logout', function(req, res, next) {
 router.get('*', function(req, res) {
   res.redirect('/#' + req.originalUrl);
 });
+
+initializeEthereumConnection();
 
 module.exports = router;

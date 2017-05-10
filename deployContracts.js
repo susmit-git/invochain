@@ -26,6 +26,8 @@ var ethWeb3 = null;
 function initializeEthereumConnection(){
   ethWeb3 = new Web3(new Web3.providers.HttpProvider("http://ethinvlab.southeastasia.cloudapp.azure.com:8545"));
 
+  //var web3IPC = new Web3(new Web3.providers.IpcProvider(gethIPCPath, require('net')));
+
   try{
   var accountCount = ethWeb3.eth.accounts.length;
   console.log("Ethereum connection successful. \n Total Ethereum Account Count: "+ accountCount);
