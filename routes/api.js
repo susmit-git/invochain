@@ -26,6 +26,8 @@ var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 
+var encryptionController = require('./encryptionController')
+
 var userContractName=":UserRegistrationService";
 var userContractAddress=     "0x68d19a9cd995e1c4fd3428a9e9b651104c9fd8a2";
 
@@ -565,44 +567,9 @@ function addUser(email, pwd, userName){
     });
 }
 
-function testEncryption(){
-        var privKeyBuf=Buffer.from('df18c0c204ecf5ce2148892d734269c81c4b731985cc3519feeb14000dd3b191','hex');
+/* GET request for creating a Book. NOTE This must come before routes that display Book (uses id) */
+router.get('/api/bc/testencryption', encryptionController.testEncryption);
 
-        var pubKey=ethUtils.privateToPublic(privKeyBuf).toString('hex');
-
-        console.log('Pub Key: '+ pubKey.toString('hex'));
-
-        console.log('Identity: '+ testIdentity);
-
-        var privKey = new bitcore.PrivateKey(privKeyBuf.toString('hex'));
-
-        var pubKey=  new bitcore.PublicKey.fromPrivateKey(privKey);
-
-        //var alice = ECIES().privateKey(privKey).publicKey(new bitcore.PublicKey(testIdentity.publicKey.toString('hex')));
-
-        var alice = ECIES().privateKey(privKey).publicKey(new bitcore.PublicKey(pubKey.toString('hex')));
-
-        var message="Lets see what happens";
-
-        var encrypted = alice.encrypt(message);
-
-        console.log('Encrypted: '+ encrypted.toString('hex'));
-        
-        var alice = ECIES().privateKey(privKey);
-
-        var decrypted = alice.decrypt(encrypted);
-
-        console.log('Decrypted: '+ decrypted.toString('hex'));
-
-        var data={encryptedData:encrypted.toString('hex'), decryptedDate:decrypted.toString('ascii')};
-
-        return data;
-}
-
-router.get('/api/bc/testencryption', function(req, res, next) {
-  var data=testEncryption();
-  res.send(data);
-});
 
 router.get('/api/logout', function(req, res, next) {
   req.logout();
