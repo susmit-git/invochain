@@ -48,3 +48,26 @@ i Insert text before the current cursor position
 I Insert text at the beginning of the cursor line
 o Open up a new line following the current line and add text there
 O Open up a new line in front of the current line and add text there
+
+
+
+Command to install git in lunix
+===============================
+sudo apt-get install git
+
+Output
+======
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+git is already the newest version (1:2.7.4-0ubuntu1.1).
+0 upgraded, 0 newly installed, 0 to remove and 103 not upgraded.
+
+
+Command to pull the latest invochain files
+==================================
+cd /home/bcadmin/invochain
+git pull --progress --no-rebase -v "origin" master
+
+// To revert a specific file
+git checkout filename
