@@ -1,0 +1,23 @@
+Enabling a new port on Transaction Node
+=========================
+- Goto - > Resource Groups -> ethinvres -> ethinvlabTXNsg
+- Click on Inbound Security Rules
+- Click on Add button to add new config
+- Provide a rule name, priority
+- Select Source as Any
+- Service - Custom
+- Protocol - Any
+- Port Range - <The port no you want to open>
+- Action - Allow
+- Click save
+
+Close all the windows
+
+- Goto -> ethinvres -> ethinvlab-LB
+- Click on Load balancing rules
+- Click on Add button
+- Provide a rule name, priority
+- Protocol - TCP
+- Port <The same port no you want to open>
+- Backend Port <The same port no you want to open>
+- Click save
