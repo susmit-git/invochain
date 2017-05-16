@@ -1,0 +1,50 @@
+
+// This is used to start mongodb app in the background
+// Even if the user logs out, the instance of the app will keep on running
+cd /home/bcadmin/softwares
+nohup mongodb-linux-x86_64-3.4.4/bin/mongod --dbpath /home/bcadmin/softwares/mongodb-linux-x86_64-3.4.4/data &
+
+// This is used to start invochain app in the background
+// Even if the user logsout teh instance of the app will keep on running
+cd /home/bcadmin/invochain
+nohup npm start &
+
+// Finds the process id (PID) of a process based on the port on which it is expected to running
+// Here it is trying to find teh process id of Invochain app 
+netstat -pnlt | grep ':3004'
+
+// Kills a process based on the process id
+sudo kill <pid>
+
+// Lists all the command parameters for Linux VIM editor
+http://www.radford.edu/~mhtay/CPSC120/VIM_Editor_Commands.htm
+
+Creating a New File
+========================
+Step 1	type	vim filename	(create a file named filename)
+Step 2	type	i	(switch to insert mode)
+Step 3	enter text	(enter your Ada program)
+Step 4	hit	Esc key	(switch back to command mode)
+Step 5	type	:wq	(write file and exit vim) press enter
+ 
+
+Editing an existing File
+=========================
+Step 1	type	vim filename	(edit the existing file named filename)
+Step 2	move around the file using regular arrow keys
+Step 3	type a - to append any text
+Step 4	Move around the file and make the changes
+Step 4	Once done, hit Esc key
+Step 5	type	:wq (means write and quite) press enter
+        In case you cant to discard your changes type q and press enter
+
+
+Some useful commands for VIM
+
+Text Entry Commands (Used to start text entry)
+a Append text following current cursor position
+A Append text to the end of current line
+i Insert text before the current cursor position
+I Insert text at the beginning of the cursor line
+o Open up a new line following the current line and add text there
+O Open up a new line in front of the current line and add text there

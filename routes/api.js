@@ -181,6 +181,26 @@ function initializeContracts(){
     return true;
 }
 
+function unlockAccount(addrAccount, strPwd){
+  if(ethWeb3.isConnected()==false){
+        console.log("No Ethereum Connection");
+        return false;
+  } 
+
+  if(strPwd==undefined || strPwd==''){
+    console.log('Passphrase cannot be blank!');
+    return false;
+  }
+
+  if(addrAccount!=undefined && addrAccount!=null){
+    var state=ethWeb3.personal.unlockAccount(addrAccount, strPwd, 1000);
+    console.log('Account unlock state: '+ state);
+    return state;
+  }
+
+  return false; 
+}
+
 function findPrivateKey(){
     if(ethWeb3.isConnected()==false){
         console.log("No Ethereum Connection");
@@ -237,6 +257,14 @@ function exportAccount(){
 
     keythereum.exportToFile(keyObject)
 }
+
+
+
+router.get('/api/bc/unlockaccount', function(req, res, next) {
+    console.log("Unlocking Account");
+    var status=unlockAccount(defaultAppAdminAccount, defaultPwd);
+    res.send({unlockStatus:status});
+});
 
 router.get('/api/bc/createaccount', function(req, res, next) {
     console.log("Creating Account");
@@ -511,6 +539,12 @@ router.get('/api/bc/verifysig', function(req, res, next) {
     res.send({address:addr});
 });
 
+router.get('/api/bc/adduser', function(req, res, next) {
+    console.log("Add User Invoked");
+    var status=addUser();
+    res.send({addUserStatus:status});
+});
+
 function verifySignature(){
     //var sgn='0x2562ea1d0af170b7be821b53b9ea2a69d39681d87adc51093702072ef18b24b9302407ea985a7cc7bec6567ba1d8ba2def3dffb29df22c756edeeb392dee0be31b';
 
@@ -542,18 +576,26 @@ function verifySignature(){
 function addUser(email, pwd, userName){
     if(ethWeb3.isConnected()==false){
         console.log("No Ethereum Connection");
-        return;
+        return false;
     }
     console.log("Ethereum Connection Successful");
     
     if(userContractInstance==undefined || userContractInstance==null){
         console.log("No Contract Instance found");
-        return;
+        return false;
     }
 
     console.log("Contract Instance Found");
+    
+    var status=unlockAccount(defaultAppAdminAccount, defaultPwd);
 
-     userContractInstance.addUser(defaultAppAdminAccount, "b@b.com", "Test User 1", 
+    if(status!=true){
+      console.log("Account couldn't be unlocked!");
+      return false;
+    }
+
+
+    userContractInstance.addUser(defaultAppAdminAccount, "c@c.com", "Test User 2", 
         "changeme", {gas: 240000, from: defaultAppAdminAccount}, (err, res) =>{
         console.log('tx: ' + res);
         var curTrans=ethWeb3.eth.getTransaction(res);
@@ -565,6 +607,8 @@ function addUser(email, pwd, userName){
         }
 
     });
+
+    return true;
 }
 
 /* GET request for creating a Book. NOTE This must come before routes that display Book (uses id) */
