@@ -611,9 +611,43 @@ function addUser(email, pwd, userName){
     return true;
 }
 
+function verifySignature2(){
+    if(ethWeb3.isConnected()==false){
+        console.log("No Ethereum Connection");
+        return false;
+    }
+    console.log("Ethereum Connection Successful");
+
+    var state=ethWeb3.personal.unlockAccount(defaultAppAdminAccount, defaultPwd, 1000);
+    console.log('Account used: '+ defaultAppAdminAccount);
+    console.log('Account unlock state: '+ state);
+
+    const msg = new Buffer('This is my test data');
+    const sig = ethWeb3.eth.sign(defaultAppAdminAccount, '0x' + msg.toString('hex'));
+    const res = ethUtils.fromRpcSig(sig);
+
+    const prefix = new Buffer("\x19Ethereum Signed Message:\n");
+    const prefixedMsg = ethUtils.sha3(
+    Buffer.concat([prefix, new Buffer(String(msg.length)), msg])
+    );
+
+    const pubKey  = ethUtils.ecrecover(prefixedMsg, res.v, res.r, res.s);
+    const addrBuf = ethUtils.pubToAddress(pubKey);
+    const addr    = ethUtils.bufferToHex(addrBuf);
+
+    console.log(defaultAppAdminAccount,  addr);
+
+    return addr;
+}
+
+
 /* GET request for creating a Book. NOTE This must come before routes that display Book (uses id) */
 router.get('/api/bc/testencryption', encryptionController.testEncryption);
 
+router.get('/api/bc/verifysig2', function(req, res, next) {
+  var addr=verifySignature2();
+  res.send({sigAddress:addr});
+});
 
 router.get('/api/logout', function(req, res, next) {
   req.logout();
