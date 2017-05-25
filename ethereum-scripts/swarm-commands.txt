@@ -1,0 +1,17 @@
+swarm --bzzaccount <address> --datadir E:\Servers\Blockchain\Data\Ethereum\swarm --ethapi \\.\pipe\geth.ipc
+
+swarm --bzzaccount <Address> --datadir E:\Servers\Blockchain\Data\Ethereum --ethapi \\.\pipe\geth.ipc
+
+swarm --bzzaccount 0xa552a2406bbb8ea8393f9af396913c1b3c246d98 --datadir E:\Servers\Blockchain\Data\Ethereum --ethapi \\.\pipe\geth.ipc
+
+geth attach ipc:E:\Servers\Blockchain\Geth\bzzd.ipc
+
+geth attach ipc:\\.\pipe\geth.ipc
+
+
+c9a99c7d326dcc6316f32fe2625b311f6dc49a175e6877681ded93137d3569e7
+1b5d887cea699d18560ae6dcaf06676f5064f630978b8031d9beb6fbddd82a82
+
+
+E:\Servers\Blockchain\angularjswspace\invoicechain>node swarmapi.js
+Downloaded file: {"undefined":{"type":"image/gif","data":{"type":"Buffer","data":[255,216,255,224,0,16,74,70,73,70,0,1,1,0,0,1,0,1,0,0,255,237,1,6,80,104,111,116,111,115,104,111,112,32,51,46,48,0,56,66,73,77,4,4,0,0,0,0,0,234,28,2,5,0,84,105,110,118,111,105,99,101,32,99,111,112,121,32,115,97,109,112,108,101,32,99,111,112,121,32,111,102,32,105,110,118,111,105,99,101,32,116,101,109,112,108,97,116,101,32,102,114,101,101,32,100,101,115,105,103,110,32,105,110,118,111,105,99,101,32,116,101,109,112,108,97,116,101,32,55,57,52,32,88,32,49,49,50,53,28,2,120,0,109,105,110,118,111,105,99,101,32,99,111,112,121,32,115,97,109,112,108,101,32,99,111,
