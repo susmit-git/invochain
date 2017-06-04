@@ -3,16 +3,19 @@ pragma solidity ^0.4.8;
 
 contract DocumentManagementService {
     address public owner;
-
+    
+    // Holds the base document metadata
     struct Document{
         address userAccount;
         bytes32 docNo;
         bytes32 docType;
-        DocumentDetail[] documentVersions;
         uint lastUpdate;
+        uint lastVersion;
         bool isActive;
+        mapping(uint=>DocumentDetail) documentVersions;
     }
     
+    // Holds the document version specific detail
     struct DocumentDetail{
         bytes32 docHash;
         bytes32 fileName;
@@ -21,14 +24,7 @@ contract DocumentManagementService {
         bool isActive;
     }
     
-    
-
-    function kill() onlyOwner{
-        //DocumentDebuggingLog(block.timestamp, "DocumentManagementService contract killed.",address(0));
-        
-		suicide(owner);
-    }
-	
+    // Modifier to idenfy whether caller of teh method is the owner of the contract 
 	modifier onlyOwner{
 		if(msg.sender!=owner){
 			throw;
@@ -39,18 +35,17 @@ contract DocumentManagementService {
 	}
     
     // Event trigerred for creating document
-    event DocumentCreationLog(uint256 indexed _eventTimeStamp, address indexed _userAccount, 
+    event DocumentCreationLog(uint256 indexed _eventTimeStamp, address indexed _user, 
     bytes32 indexed _docNo, bytes32 _docType);
 	// Event trigerred for retrieving document
-	event RetrieveDocumentLog(uint256 indexed _eventTimeStamp, address indexed _userAccount, 
+	event RetrieveDocumentLog(uint256 indexed _eventTimeStamp, address indexed _user, 
     bytes32 indexed _docNo, bytes32 _docType);
     // Event trigerred for general debugging
 	event DocumentDebuggingLog(uint256 indexed _eventTimeStamp, bytes32 _data, address _user);
 	
 	mapping(bytes32=>Document) public mapDocuments; // Holds Docno as key 
 	mapping(address=>bytes32[]) public mapUserDocNos; // Holds User address as key with valuehaving  array of all document nos
-    mapping(bytes32=>uint) public mapDocLatestVersion; // Holds Docno as key with value as latest version number
-	
+
     /* Constructor */
     function DocumentManagementService() {
             owner=msg.sender;
@@ -61,7 +56,7 @@ contract DocumentManagementService {
     * Method to check whether a document with the providd document no and version is present
     **/
     function isDocumentAlreadyPresent(bytes32 _docNo)constant returns (bool _status){
-        if(mapDocuments[_docNo].lastUpdate==0){
+        if(mapDocuments[_docNo].lastVersion==0){
             DocumentDebuggingLog(block.timestamp, "Document already present", msg.sender);
             return true;
         }
@@ -70,28 +65,40 @@ contract DocumentManagementService {
     }
     
     /**
-    * Method to add a new document based on teh provided details
+    * Method to create a document with the provided details
     **/
-    function addDocument(address _userAccount, bytes32 _docNo,
+    function createDocument(address _user, bytes32 _docNo,
         bytes32 _docType, bytes32 _docHash, bytes32 _fileName, 
-        uint _expDate, uint _lastUpdate) returns (bool _status){
-
-        uint _version=1;
+        uint _expDate, uint _lastUpdate, uint _version) constant private returns (bool status){
         
-		DocumentDebuggingLog(block.timestamp, "Add Document Step 1",_userAccount);
-		
-        bytes32[] arrDocNos=mapUserDocNos[_userAccount];
-        uint currentDocVersion=mapDocLatestVersion[_docNo];
-
-        if(isDocumentAlreadyPresent(_docNo)){
-           _version=currentDocVersion+1;
-           //DocumentDebuggingLog(block.timestamp, "Add Document Step 2 - Document Version: " + _version, _userAccount);
-        }
-
-        //bytes32 docKey=_docNo +"_"+ _version;
+        bytes32[] arrDocNos=mapUserDocNos[_user];
         
+        Document memory document;
         
-        DocumentDetail memory dDetail=DocumentDetail({
+        document.userAccount= _user;
+            document.docNo= _docNo;
+            document.docType=_docType;
+            document.lastUpdate= now;
+            document.isActive= true;
+            document.lastVersion= _version;
+            mapDocuments[_docNo]=document;
+            
+        createDocumentDetail(_docNo, _docHash, _fileName, 
+        _expDate, _lastUpdate, _version);
+        
+         arrDocNos.push(_docNo);
+            mapUserDocNos[_user]=arrDocNos;
+            
+        return true;
+    }
+    
+    /**
+    * Method to create a document version specific details with the provided data
+    **/
+    function createDocumentDetail(bytes32 _docNo, bytes32 _docHash, bytes32 _fileName, 
+        uint _expDate, uint _lastUpdate, uint _version) constant private returns (bool status){
+        
+        DocumentDetail memory docDetail=DocumentDetail({
             docHash: _docHash,
             fileName: _fileName,
             expDate: _expDate,
@@ -99,30 +106,44 @@ contract DocumentManagementService {
             isActive: true
         });
         
-        Document document;
+        Document tmpnewdoc=mapDocuments[_docNo];
+        tmpnewdoc.documentVersions[_version]=docDetail;
+        tmpnewdoc.lastVersion=_version;
         
-        document.userAccount= _userAccount;
-        document.docNo= _docNo;
-        document.docType=_docType;
-        document.lastUpdate= now;
-        document.isActive= true;
-        document.documentVersions.push(dDetail);
+        return true;
+    }
+    
+    /**
+    * Method to add a new document based on the provided details
+    **/
+    function addDocument(address _userAccount, bytes32 _docNo,
+        bytes32 _docType, bytes32 _docHash, bytes32 _fileName, 
+        uint _expDate, uint _lastUpdate) returns (bool _status){
+
+        uint _version=1;
         
-        mapDocuments[_docNo]=document;
-        
-        if(_version==1){
-            arrDocNos.push(_docNo);
-            mapUserDocNos[_userAccount]=arrDocNos;
+		DocumentDebuggingLog(block.timestamp, "Add Document Step 1", _userAccount);
+		
+        uint currentDocVersion=mapDocuments[_docNo].lastVersion;
+
+        if(isDocumentAlreadyPresent(_docNo)){
+           _version=currentDocVersion+1;
+           DocumentDebuggingLog(block.timestamp, "Add Document Step 2", _userAccount);
         }
 
-        
-        mapDocLatestVersion[_docNo]=_version;
+        if(_version==1){
+            createDocument(_userAccount, _docNo,_docType, _docHash, _fileName, 
+            _expDate, _lastUpdate, _version);
+        }
+        else{
+            createDocumentDetail(_docNo, _docHash, _fileName, 
+            _expDate, _lastUpdate, (_version+1));
+        }
 
-		//DocumentDebuggingLog(block.timestamp, "Add Document Step 3 - Document Created",_userAccount);
+		DocumentDebuggingLog(block.timestamp, "Add Document Step 3",_userAccount);
 
         DocumentCreationLog(block.timestamp, _userAccount,_docNo, _docType);
 	
-		
         return true;
     }    
     
@@ -134,15 +155,10 @@ contract DocumentManagementService {
         bytes32 _fileName, uint _expDate, uint _lastUpdate,
         bool _isActive, uint _version){
         var docFound=false;
-        Document doc;
+        Document doc=mapDocuments[_docNo];
         bytes32 docKey="";
 
-        //uint currentDocVersion=mapDocLatestVersion[_docNo];
-        
-        //docKey=_docNo +"_"+ currentDocVersion;
-
         if(isDocumentAlreadyPresent(_docNo)){
-            doc=mapDocuments[_docNo];
             docFound=true;
         }
     
@@ -166,20 +182,15 @@ contract DocumentManagementService {
         bytes32 _fileName, uint _expDate, uint _lastUpdate,
         bool _isActive){
         bool docFound=false;
-        Document doc;
-        bytes32 docKey="";
-
-        //docKey=_docNo +"_"+ _version;
-
+        Document doc=mapDocuments[_docNo];
+        
         if(isDocumentAlreadyPresent(_docNo)){
-            doc=mapDocuments[docKey];
-            
             docFound=true;
         }
         
         //DocumentDebuggingLog(block.timestamp, "Document found state : "+docFound +": Type: "+doc._docType,_userAccount);
         
-        uint len= doc.documentVersions.length;
+        uint len= doc.lastVersion;
         
 	    RetrieveDocumentLog(block.timestamp, doc.userAccount, doc.docNo, doc.docType);
     
@@ -188,6 +199,7 @@ contract DocumentManagementService {
         doc.documentVersions[len-1].expDate, doc.lastUpdate, doc.isActive);
     }
     
+    /*
     function appendUintToString(string inStr, uint v) constant returns (string str) {
         uint maxlength = 100;
         bytes memory reversed = new bytes(maxlength);
@@ -225,5 +237,11 @@ contract DocumentManagementService {
         }
         return string(bytesStringTrimmed);
     }
-
+    */
+    
+    function kill() onlyOwner{
+        DocumentDebuggingLog(block.timestamp, "Contract killed",address(0));
+        
+		suicide(owner);
+    }
 }
