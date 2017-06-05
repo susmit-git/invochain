@@ -11,20 +11,12 @@ var fs = require('fs');
 var multer  = require('multer')
 var mkdirp = require('mkdirp');
 const solc = require('solc');
-var userContractInstance = null;
 var documentContractInstance = null;
-
-var userContractName=":UserRegistrationService";
-var userContractAddress= "0xa8aeed490d6f3257e2a3030fc34d728a1a820ba4";
-userContractAddress=     "0x9ecbc715b39eb13747b440c70ffbc5c73afc740c";
-userContractAddress=     "0x361a65149a6e1b0b93ee0884bd10b09e2a6b7fe7";
-userContractAddress=     "0x8a9a2d9849235684098d1432a84b4b3cc095a665";
-userContractAddress=     "0xbc5b727864a1783890c84e5a28fae4b2b03d2442";
-userContractAddress=     "0x68d19a9cd995e1c4fd3428a9e9b651104c9fd8a2";
+var documentContractInstance = null;
 
 var documentContractName = ":DocumentManagementService";
 var documentContractAddress = "0x8965b52aadbe2fa88bebb9940b6e0eee52e1f468";
-
+documentContractAddress = "0xa38f9a968deda699c83454670ef31f4cb2a41957";
 
 var ethWeb3 = null;
 
@@ -74,54 +66,6 @@ function unlockAccount(acAddress){
   return false; 
 }
 
-function deployUserRegistrationContract(){
-    if(ethWeb3.isConnected()==false){
-        console.log("No Ethereum Connection");
-        return;
-    }  
-    console.log("Ethereum Connection Successful");
-    var input = fs.readFileSync('contracts/UserRegistrationService.sol');
-    
-    console.log("Contract copilation in progress");
-    
-	var output = solc.compile(input.toString(), 1);
-
-    console.log("Contract Deployment Initiated for: "+userContractName);
-
-
-    var bytecode = output.contracts[userContractName].bytecode;
-    console.log("Got bytecode");
-    var abi = JSON.parse(output.contracts[userContractName].interface);
-    console.log("Got Abi");   
-    var contract = ethWeb3.eth.contract(abi);
-    console.log("Got Contract using ABI");   
-
-    //unlockAccount(ethWeb3.eth.accounts[1]);
-
-    console.log("Invoked Deployment");   
-
-    userContractInstance = contract.new({
-          data: '0x' + bytecode,
-          from: ethWeb3.eth.accounts[1],
-          gas: 90000*10
-          }, (err, res) => {
-          if (err) {
-              console.log(err);
-              return;
-          }
-
-          // Log the tx, you can explore status with eth.getTransaction()
-          console.log("Transaction Hash: "+ res.transactionHash);
-
-          // If we have an address property, the contract was deployed
-          if (res.address) {
-              console.log('Deployed Contract address: ' + res.address);
-              userContractAddress= res.address;
-          }
-          
-      });
-}
-
 function deployDocumentManagementContract(){
     if(ethWeb3.isConnected()==false){
         console.log("No Ethereum Connection");
@@ -150,7 +94,7 @@ function deployDocumentManagementContract(){
     documentContractInstance = contract.new({
           data: '0x' + bytecode,
           from: ethWeb3.eth.accounts[1],
-          gas: 90000*10
+          gas: 90000*15
           }, (err, res) => {
           if (err) {
               console.log(err);
@@ -175,35 +119,44 @@ function initializeContracts(){
         return;
     }  
     console.log("Ethereum Connection Successful");
-    var input = fs.readFileSync('contracts/UserRegistrationService.sol');
+    var input = fs.readFileSync('contracts/DocumentMAnagementService.sol');
     var output = solc.compile(input.toString(), 1);
 
-    var bytecode = output.contracts[userContractName].bytecode;
+    var bytecode = output.contracts[documentContractName].bytecode;
     console.log("Got bytecode");
-    var abi = JSON.parse(output.contracts[userContractName].interface);
+    var abi = JSON.parse(output.contracts[documentContractName].interface);
     console.log("Got Abi");   
     var contract = ethWeb3.eth.contract(abi);
 
-    userContractInstance =  contract.at(userContractAddress)  
-    console.log("Contract instanciated from: "+userContractAddress);   
+    documentContractInstance =  contract.at(documentContractAddress)  
+    console.log("Contract instanciated from: "+documentContractAddress);   
 }
 
-function addUser(){
+function addDocument(){
     if(ethWeb3.isConnected()==false){
         console.log("No Ethereum Connection");
         return;
     }
     console.log("Ethereum Connection Successful");
     
-    if(userContractInstance==undefined || userContractInstance==null){
+    if(documentContractInstance==undefined || documentContractInstance==null){
         console.log("No Contract Instance found");
         return;
     }
 
     console.log("Contract Instance Found");
 
-     userContractInstance.addUser(ethWeb3.eth.accounts[1], "b@b.com", "Test User 1", 
-        "changeme", {gas: 240000, from: ethWeb3.eth.accounts[1]}, (err, res) =>{
+    unlockAccount(ethWeb3.eth.accounts[1]);
+
+    /*address _userAccount, bytes32 _docNo,
+        bytes32 _docType, bytes32 _docHash, bytes32 _fileName, 
+        uint _expDate
+        */
+    var expDate = new Date().getTime(); 
+    console.log("Date passed: "+ expDate);
+
+    documentContractInstance.addDocument(ethWeb3.eth.accounts[1], "DOC101", "PASSPORT", 
+    "XYZ","USERPASSPORT.JPG",expDate, {gas: 240000*2, from: ethWeb3.eth.accounts[1]}, (err, res) =>{
         console.log('tx: ' + res);
         var curTrans=ethWeb3.eth.getTransaction(res);
 
@@ -216,20 +169,20 @@ function addUser(){
     });
 }
 
-function getUser(){
+function getDocument(){
     if(ethWeb3.isConnected()==false){
         console.log("No Ethereum Connection");
         return;
     }
     console.log("Ethereum Connection Successful");
     
-    if(userContractInstance==undefined || userContractInstance==null){
+    if(documentContractInstance==undefined || documentContractInstance==null){
         console.log("No Contract Instance found");
         return;
     }
     console.log("Contract Instance Found");
     
-    userContractInstance.getUser.call(ethWeb3.eth.accounts[1], (err, res) =>{
+    documentContractInstance.getUser.call(ethWeb3.eth.accounts[1], (err, res) =>{
       console.log('Data 1: ' + res[0]); 
       console.log('Data 2: ' + res[1].toString()); 
       console.log('Data 3: ' + res[2].toString()); 
@@ -245,13 +198,13 @@ function trackEvents(){
     }
     console.log("Ethereum Connection Successful");
     
-    if(userContractInstance==undefined || userContractInstance==null){
+    if(documentContractInstance==undefined || documentContractInstance==null){
         console.log("No Contract Instance found");
         return;
     }
     console.log("Contract Instance Found");
     
-    var event = userContractInstance.UserRegDebuggingLog( {}, {fromBlock: 0, toBlock: 'latest'});
+    var event = documentContractInstance.DocumentDebuggingLog( {}, {fromBlock: 0, toBlock: 'latest'});
     event.watch(function(error, response)
     {  
         var data=" Debug : " + hexToAscii(response.args._data) +":"+ response.args._user;
@@ -270,11 +223,11 @@ function testContracts(mode){
      initializeContracts();
 
      if(mode=='ADD'){
-        addUser();
+        addDocument();
         trackEvents();
      }
      else if(mode=='LIST'){
-        getUser();
+        getDocument();
         trackEvents();
      }
      else if(mode=='EVENTS'){
@@ -283,7 +236,7 @@ function testContracts(mode){
 }
 
 initializeEthereumConnection();
-deployContracts();
-//testContracts('ADD');
+//deployContracts();
+testContracts('ADD');
 //testContracts('LIST');
 //testContracts('EVENT');

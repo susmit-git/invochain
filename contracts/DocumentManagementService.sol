@@ -21,6 +21,7 @@ contract DocumentManagementService {
         bytes32 fileName;
         uint expDate;
         uint version;
+        uint lastUpdate;
         bool isActive;
     }
     
@@ -56,7 +57,7 @@ contract DocumentManagementService {
     * Method to check whether a document with the providd document no and version is present
     **/
     function isDocumentAlreadyPresent(bytes32 _docNo)constant returns (bool _status){
-        if(mapDocuments[_docNo].lastVersion==0){
+        if(mapDocuments[_docNo].lastVersion>0){
             DocumentDebuggingLog(block.timestamp, "Document already present", msg.sender);
             return true;
         }
@@ -69,25 +70,32 @@ contract DocumentManagementService {
     **/
     function createDocument(address _user, bytes32 _docNo,
         bytes32 _docType, bytes32 _docHash, bytes32 _fileName, 
-        uint _expDate, uint _lastUpdate, uint _version) constant private returns (bool status){
+        uint _expDate, uint _version) private returns (bool status){
         
         bytes32[] arrDocNos=mapUserDocNos[_user];
         
+        DocumentDebuggingLog(block.timestamp, "Create Document Step 1", address(0));
+
         Document memory document;
         
         document.userAccount= _user;
-            document.docNo= _docNo;
-            document.docType=_docType;
-            document.lastUpdate= now;
-            document.isActive= true;
-            document.lastVersion= _version;
-            mapDocuments[_docNo]=document;
-            
-        createDocumentDetail(_docNo, _docHash, _fileName, 
-        _expDate, _lastUpdate, _version);
+        document.docNo= _docNo;
+        document.docType=_docType;
+        document.lastUpdate= now;
+        document.isActive= true;
+        document.lastVersion= _version;
+        mapDocuments[_docNo]=document;
+
+        DocumentDebuggingLog(block.timestamp, "Create Document Step 2", address(0));
         
-         arrDocNos.push(_docNo);
-            mapUserDocNos[_user]=arrDocNos;
+        createDocumentDetail(_docNo, _docHash, _fileName, 
+        _expDate, _version);
+        DocumentDebuggingLog(block.timestamp, "Create Document Step 3", address(0));
+         
+        arrDocNos.push(_docNo);
+        mapUserDocNos[_user]=arrDocNos;
+
+        DocumentDebuggingLog(block.timestamp, "Create Document Step 4", address(0));
             
         return true;
     }
@@ -96,20 +104,24 @@ contract DocumentManagementService {
     * Method to create a document version specific details with the provided data
     **/
     function createDocumentDetail(bytes32 _docNo, bytes32 _docHash, bytes32 _fileName, 
-        uint _expDate, uint _lastUpdate, uint _version) constant private returns (bool status){
+        uint _expDate, uint _version) private returns (bool status){
         
+        DocumentDebuggingLog(block.timestamp, "Create Document Version Step 1", address(0));
+
         DocumentDetail memory docDetail=DocumentDetail({
             docHash: _docHash,
             fileName: _fileName,
             expDate: _expDate,
             version: _version,
+            lastUpdate: now,
             isActive: true
         });
         
-        Document tmpnewdoc=mapDocuments[_docNo];
-        tmpnewdoc.documentVersions[_version]=docDetail;
-        tmpnewdoc.lastVersion=_version;
+        mapDocuments[_docNo].documentVersions[_version]=docDetail;
+        mapDocuments[_docNo].lastVersion=_version;
         
+        DocumentDebuggingLog(block.timestamp, "Create Document Version Step 2", address(0));
+
         return true;
     }
     
@@ -118,7 +130,7 @@ contract DocumentManagementService {
     **/
     function addDocument(address _userAccount, bytes32 _docNo,
         bytes32 _docType, bytes32 _docHash, bytes32 _fileName, 
-        uint _expDate, uint _lastUpdate) returns (bool _status){
+        uint _expDate) returns (bool _status){
 
         uint _version=1;
         
@@ -133,11 +145,11 @@ contract DocumentManagementService {
 
         if(_version==1){
             createDocument(_userAccount, _docNo,_docType, _docHash, _fileName, 
-            _expDate, _lastUpdate, _version);
+            _expDate, _version);
         }
         else{
             createDocumentDetail(_docNo, _docHash, _fileName, 
-            _expDate, _lastUpdate, (_version+1));
+            _expDate, (_version+1));
         }
 
 		DocumentDebuggingLog(block.timestamp, "Add Document Step 3",_userAccount);
@@ -162,16 +174,16 @@ contract DocumentManagementService {
             docFound=true;
         }
     
-        uint len= _version;
+        uint len= doc.lastVersion;
         
         //DocumentDebuggingLog(block.timestamp, "Document found state : "+docFound +": Type: "+doc._docType,_userAccount);
 
 	    RetrieveDocumentLog(block.timestamp, doc.userAccount, doc.docNo, doc.docType);
 
         return (docFound, doc.userAccount, doc.docType, 
-        doc.documentVersions[len-1].docHash, doc.documentVersions[len-1].fileName, 
-        doc.documentVersions[len-1].expDate, doc.lastUpdate, doc.isActive, 
-        doc.documentVersions[len-1].version);
+        doc.documentVersions[len].docHash, doc.documentVersions[len].fileName, 
+        doc.documentVersions[len].expDate, doc.lastUpdate, doc.isActive, 
+        doc.documentVersions[len].version);
     }
 
     /**
@@ -190,13 +202,13 @@ contract DocumentManagementService {
         
         //DocumentDebuggingLog(block.timestamp, "Document found state : "+docFound +": Type: "+doc._docType,_userAccount);
         
-        uint len= doc.lastVersion;
+        uint len= _version;
         
 	    RetrieveDocumentLog(block.timestamp, doc.userAccount, doc.docNo, doc.docType);
     
         return (docFound, doc.userAccount, doc.docType, 
-        doc.documentVersions[len-1].docHash, doc.documentVersions[len-1].fileName, 
-        doc.documentVersions[len-1].expDate, doc.lastUpdate, doc.isActive);
+        doc.documentVersions[len].docHash, doc.documentVersions[len].fileName, 
+        doc.documentVersions[len].expDate, doc.lastUpdate, doc.isActive);
     }
     
     /*
